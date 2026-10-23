@@ -35,7 +35,7 @@
   --line: #dce3e7;
   --white: #ffffff;
   --heading: Arial, "Segoe UI", sans-serif;
-  --body: "Helios", Arial, "Segoe UI", sans-serif;
+  --body: "Segoe UI", Arial, sans-serif;
   --shell: min(1180px, calc(100% - 40px));
 }
 
