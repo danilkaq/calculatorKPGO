@@ -1,0 +1,6 @@
+tmp/
+server-output.log
+server-error.log
+node_modules/
+.DS_Store
+Thumbs.db
