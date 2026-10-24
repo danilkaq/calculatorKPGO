@@ -14,6 +14,31 @@ const money = value => `${Math.round(value).toLocaleString("ru-RU")} ₽`;
 const compactMoney = value => new Intl.NumberFormat("ru-RU", { notation: "compact", maximumFractionDigits: 1 }).format(value) + " ₽";
 const percent = value => `${value.toFixed(3).replace(".", ",")} %`;
 
+function initTypography() {
+  const roots = [qs("main"), qs("footer")].filter(Boolean);
+  const skip = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "SELECT", "OPTION", "OUTPUT", "CODE", "PRE"]);
+  const shortWords = /(^|[\s(«])((?:в|во|к|ко|с|со|у|о|об|от|до|по|на|за|из|без|для|при|под|над|перед|через|и|а|но|или|либо|что|чтобы|как|же|не|то|это|где|если|когда|пока|потому|поэтому|поскольку|также|вместе|его|её|ее|их|тот|та|те|этот|эта|эти|вашей))[ \t\r\n]+(?=\S)/giu;
+
+  roots.forEach(root => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+
+    nodes.forEach(textNode => {
+      const parent = textNode.parentElement;
+      if (!parent || skip.has(parent.tagName) || parent.closest("[data-no-typeset]")) return;
+      let value = textNode.nodeValue.replace(/ПАО\s+Газпром/gu, "ПАО\u00a0Газпром");
+      for (let pass = 0; pass < 12; pass += 1) {
+        const nextValue = value.replace(shortWords, (_, lead, word) => `${lead}${word}\u00a0`);
+        if (nextValue === value) break;
+        value = nextValue;
+      }
+      textNode.nodeValue = value;
+    });
+  });
+}
+
 const form = qs("#mortgage-form");
 const priceEl = qs("#price");
 const downEl = qs("#downpayment");
@@ -140,6 +165,7 @@ function calculate() {
   qs("#r-total").textContent = money(totalPayment);
   qs("#r-norm-cost").textContent = money(normCost);
   qs("#r-subsidy-total").textContent = money(totalSubsidy);
+  qs("#r-employee-monthly").textContent = money(schedule[0]?.employeeTotal || 0);
 
   currentSchedule = schedule;
   renderTable(schedule);
@@ -284,6 +310,7 @@ function initActiveNavigation() {
 
 populateRegions();
 updateRange();
+initTypography();
 initMenu();
 initReveal();
 initActiveNavigation();
