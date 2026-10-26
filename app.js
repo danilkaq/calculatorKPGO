@@ -15,9 +15,9 @@ const compactMoney = value => new Intl.NumberFormat("ru-RU", { notation: "compac
 const percent = value => `${value.toFixed(3).replace(".", ",")} %`;
 
 function initTypography() {
-  const roots = [qs("main"), qs("footer")].filter(Boolean);
+  const roots = [qs("header"), qs("main"), qs("footer")].filter(Boolean);
   const skip = new Set(["SCRIPT", "STYLE", "TEXTAREA", "INPUT", "SELECT", "OPTION", "OUTPUT", "CODE", "PRE"]);
-  const shortWords = /(^|[\s(«])((?:в|во|к|ко|с|со|у|о|об|от|до|по|на|за|из|без|для|при|под|над|перед|через|и|а|но|или|либо|что|чтобы|как|же|не|то|это|где|если|когда|пока|потому|поэтому|поскольку|также|вместе|его|её|ее|их|тот|та|те|этот|эта|эти|вашей))[ \t\r\n]+(?=\S)/giu;
+  const shortWords = /(^|[\s(«])((?:в|во|к|ко|с|со|у|о|об|обо|от|ото|до|по|на|за|из|изо|без|для|при|под|подо|над|надо|перед|передо|через|между|и|а|но|да|или|либо|что|чтобы|как|же|бы|ли|не|ни|то|это|где|если|когда|пока|потому|поэтому|поскольку|также|вместе|его|её|ее|их|тот|та|те|этот|эта|эти|вашей))[ \t\r\n]+(?=\S)/giu;
 
   roots.forEach(root => {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -28,7 +28,10 @@ function initTypography() {
     nodes.forEach(textNode => {
       const parent = textNode.parentElement;
       if (!parent || skip.has(parent.tagName) || parent.closest("[data-no-typeset]")) return;
-      let value = textNode.nodeValue.replace(/ПАО\s+Газпром/gu, "ПАО\u00a0Газпром");
+      let value = textNode.nodeValue
+        .replace(/ПАО[\s\u00a0]+«Газпром»/gu, "ПАО\u00a0«Газпром»")
+        .replace(/ПАО[\s\u00a0]+Газпром/gu, "ПАО\u00a0Газпром")
+        .replace(/(Групп(?:а|ы|е|у|ой))[\s\u00a0]+Газпром/gu, "$1\u00a0Газпром");
       for (let pass = 0; pass < 12; pass += 1) {
         const nextValue = value.replace(shortWords, (_, lead, word) => `${lead}${word}\u00a0`);
         if (nextValue === value) break;
